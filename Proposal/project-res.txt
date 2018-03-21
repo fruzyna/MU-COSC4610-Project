@@ -1,0 +1,54 @@
+Quick Resources (Note from writing proposal)
+
+Project info: http://www.mscs.mu.edu/~praveen/Teaching/Sp18/DM/DM-ProjDescription.html 
+
+Iowa Liquor Sales and Income/Poverty 
+
+Github: https://github.com/mail929/MU-COSC4610-Project 
+
+Datasets: https://data.iowa.gov/Economy/Iowa-Liquor-Sales/m3tr-qhgy 
+
+https://www.census.gov/data/datasets/2016/demo/saipe/2016-state-and-county.html 
+
+Neighborhood Poverty and Alcohol Use  
+
+http://www.jstor.org/stable/pdf/25680578.pdf : The Relationship Between Neighborhood Poverty and Alcohol Use: Estimation by Marginal Structural Models by Cerda, Diez-Roux, et. Al. 
+
+    Concludes neighborhood poverty is a predictor of alcohol consumption 
+
+    Most studies don’t account for neighborhood change over time 
+
+    Is it the influence of the neighborhood or the selection of people 
+
+    Individual status affects neighborhood choice and consumption 
+
+    But also product of opportunities in neighborhood 
+
+    Estimated 3 models, traditional repeated measures regression between neighborhood poverty and alcohol risk 
+
+    People in more impoverished neighborhoods were more likely to binge 
+
+https://0-www-jsad-com.libus.csd.mu.edu/doi/full/10.15288/jsad.2015.76.439? 
+
+    Test if there are more alcohol outlets are in areas with high alcohol demand 
+
+    Test if there are less alcohol outlets in areas with high land and structured rends 
+
+    Used data from 2010 National Drug Strategy Household Survey for alcohol demand and census data from Melbourne, Australia 
+
+    Used Bayesian conditional autoregressive Poisson models to estimate the count of bars, restaurants, and off-premise outlets as well as market potential, income and zoning ordinances 
+
+    Found concentration of outlets in low-income areas and fewer concentration in high-income areas 
+
+http://0-search.ebscohost.com.libus.csd.mu.edu/login.aspx?direct=true&db=buh&AN=113304886&site=eds-live Is there a link between alcohol consumption and the level of poverty? 
+
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+Page Break 
