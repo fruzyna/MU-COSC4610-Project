@@ -1,11 +1,54 @@
 <html>
-	<head>
-		<title>MU COSC 47610 Project</title>
-	</head>
-	<body>
-		This is the webpage of our group's final project for Data Mining at Marquette University<br>
-		Please excuse the webpage, it is a work in progress<br>
-		Our group consists of Liam Fruzyna, Katy Weathington, and Sarah Graupman<br>
-		View our progress on <a href="https://github.com/mail929/MU-COSC4610-Project"> our GitHub Repo</a>
-	</body>
+  <head>
+    <title>4610 Project</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.5.1.min.js"></script>
+  </head>
+  <body>
+    <div id="header">
+      <div id="page-title">
+        4610 Project
+      </div>
+      <div id="links">
+        <div id="link" onclick='home()'>
+          Home
+        </div>
+        <div id="link" onclick='findings()'>
+          Findings
+        </div>
+        <div id="link" onclick='about()'>
+          About
+        </div>
+      </div>
+    </div>
+    <div id="body">
+    </div>
+  </body>
+ <script>
+   home();
+   function home()
+   {
+     $('#body').load('home.html');
+   }
+   function findings()
+   {
+     $('#body').load('findings.html');
+   }
+   function about()
+   {
+     $('#body').load('about.html');
+   }
+   function scaleImage(element, maxWidth)
+   {
+     imageWidth = element.width;
+     imageHeight = element.height;
+     maxWidth = maxWidth * window.innerWidth;
+     if(imageWidth > maxWidth)
+     {
+       element.width = maxWidth;
+       element.height = imageHeight * (maxWidth/imageWidth);
+     }
+   }
+ </script>
 </html>
