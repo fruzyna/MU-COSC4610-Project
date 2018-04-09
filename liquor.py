@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 # COSC 4610 Final Project
@@ -14,14 +14,14 @@ sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[2]:
+# In[3]:
 
 
 # Read in liquor sales dataset (go make some coffee)
-liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number').sort_values('Date')
+liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', low_memory = False).sort_values('Date')
 
 
-# In[3]:
+# In[4]:
 
 
 # Makes all county names uniform (all caps, no "COUNTY")
@@ -31,7 +31,7 @@ def correctCounty(county):
     return str(county)
 
 
-# In[4]:
+# In[5]:
 
 
 # Trim unnecessary rows
@@ -44,7 +44,7 @@ if 'liquor' in locals():
     liquor = liquor.drop('Pack', axis=1)
 
 
-# In[5]:
+# In[6]:
 
 
 # Make county names uniform
@@ -59,7 +59,7 @@ liquor['State Bottle Retail'] = liquor['State Bottle Retail'].astype(float)
 liquor
 
 
-# In[6]:
+# In[7]:
 
 
 # Get range of dates from data
@@ -72,7 +72,7 @@ dateRange = str(earliest.strftime('%m/%d/%Y')) + ' to ' + str(latest.strftime('%
 delta
 
 
-# In[7]:
+# In[8]:
 
 
 # Read in poverty dataset and trim to median incomes by county
@@ -83,14 +83,14 @@ income = poverty['Median_Household_Income'].sort_values(ascending=False)
 #income
 
 
-# In[8]:
+# In[9]:
 
 
 # Plot median household income by county
 income.plot(kind='bar', figsize=(15,7))
 
 
-# In[9]:
+# In[10]:
 
 
 # The liquor sales have fake? counties, find them
@@ -98,7 +98,7 @@ overlap = liquor['County'].isin(income.index)
 overlap.value_counts()
 
 
-# In[10]:
+# In[11]:
 
 
 # Investigate the fake counties
@@ -107,7 +107,7 @@ liquor[fakeCounties].County.unique()
 # El PASO County is in Colorado so I'm not sure what it is doing in this dataset 
 
 
-# In[11]:
+# In[12]:
 
 
 fakeCountiesmapper = {
@@ -121,7 +121,7 @@ overlap = liquor['County'].isin(income.index)
 overlap.value_counts()
 
 
-# In[12]:
+# In[13]:
 
 
 # Remove leftover "fake" counties
@@ -129,7 +129,7 @@ liquor = liquor[overlap]
 liquor['County'].isin(income.index).value_counts()
 
 
-# In[13]:
+# In[14]:
 
 
 # Count sales by county
@@ -143,7 +143,7 @@ plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
 
 
-# In[14]:
+# In[54]:
 
 
 # Estimate populations by county
@@ -151,7 +151,7 @@ populations = (poverty['People_of_All_Ages_in_Poverty'] * 100 / poverty['Percent
 #populations
 
 
-# In[15]:
+# In[16]:
 
 
 # Calculate and plot liquor sales per capita per year
@@ -163,14 +163,14 @@ plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
 
 
-# In[30]:
+# In[17]:
 
 
 salesPerCapita['DICKINSON']
 salesPerCapita['FREMONT']
 
 
-# In[16]:
+# In[18]:
 
 
 # Get the total volume sold by county
@@ -184,7 +184,7 @@ for county in income.index:
 countyVolumes = countyVolumes.sort_values(ascending=False)
 
 
-# In[17]:
+# In[19]:
 
 
 # Plot volume per capita by county per year
@@ -196,14 +196,14 @@ plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
 
 
-# In[32]:
+# In[38]:
 
 
-volumePerCapita['DICKINSON']
-volumePerCapita['FREMONT']
+print('Dickneson: ', round(volumePerCapita['DICKINSON'],2))
+print('Fremont: ', round(volumePerCapita['FREMONT'],2))
 
 
-# In[18]:
+# In[21]:
 
 
 # Get the total spent by county
@@ -217,7 +217,7 @@ for county in income.index:
 countySpent = countySpent.sort_values(ascending=False)
 
 
-# In[19]:
+# In[22]:
 
 
 # Plot total spent per capita by county per year
@@ -228,14 +228,14 @@ plot.set_xlabel('County')
 plot.set_ylabel('Dollars Spent')
 
 
-# In[33]:
+# In[39]:
 
 
 spentPerLiter.describe()
-spentPerLiter['FREMONT']
+round(spentPerLiter['FREMONT'],2)
 
 
-# In[20]:
+# In[24]:
 
 
 # Volume per sale by county, these numbers seem fishy
@@ -246,7 +246,7 @@ plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
 
 
-# In[21]:
+# In[25]:
 
 
 # This is a waste of time for now
@@ -258,7 +258,7 @@ plot.set_ylabel('Liquor Volume (L)')
 #liquor['Median Household Income'] = liquor['County'].apply(getIncome)
 
 
-# In[36]:
+# In[42]:
 
 
 # Investigating Fremont
@@ -266,13 +266,21 @@ fremont = liquor.loc[liquor['County'] == 'FREMONT']
 fremont['Store Name'].value_counts()
 
 
-# In[41]:
+# In[43]:
 
 
-liquor['Store Name'].value_counts()
+# Highest amount of purchases
+liquor['Store Name'].value_counts().head()
 
 
-# In[40]:
+# In[44]:
+
+
+#Lowest amount of purchases
+liquor['Store Name'].value_counts().tail()
+
+
+# In[45]:
 
 
 # Investigating Casey's
@@ -280,7 +288,7 @@ casey = liquor.loc[liquor['Store Name'].str.contains('Casey\'s')]
 casey['Store Name'].value_counts().describe()
 
 
-# In[22]:
+# In[29]:
 
 
 # Plot sales and income
@@ -289,7 +297,7 @@ salesIncome.columns = ['Sales Per Capita', 'Median Household Income']
 salesIncome.plot(kind='scatter', y='Sales Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Sales Per Capita by County')
 
 
-# In[23]:
+# In[30]:
 
 
 # Plot volume and income
@@ -298,7 +306,7 @@ volumeIncome.columns = ['Volume Per Capita', 'Median Household Income']
 volumeIncome.plot(kind='scatter', y='Volume Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Volume Per Capita by County')
 
 
-# In[24]:
+# In[31]:
 
 
 # Plot sale size and income
@@ -307,7 +315,7 @@ sizeIncome.columns = ['Volume Per Sale', 'Median Household Income']
 sizeIncome.plot(kind='scatter', y='Volume Per Sale', x='Median Household Income', title='Median Household Income vs Volume Per Sale by County')
 
 
-# In[25]:
+# In[32]:
 
 
 # Plot cost per liter and income
@@ -316,11 +324,12 @@ costIncome.columns = ['Cost Per Liter', 'Median Household Income']
 costIncome.plot(kind='scatter', y='Cost Per Liter', x='Median Household Income', title='Median Household Income vs Cost Per Liter by County')
 
 
-# In[26]:
+# In[33]:
 
 
 # Plot cpst per liter and sales
 costSales = pd.concat([spentPerLiter, salesPerCapita], axis=1)
 costSales.columns = ['Cost Per Liter', 'Sales Per Capita']
 costSales.plot(kind='scatter', y='Cost Per Liter', x='Sales Per Capita', title='Sales Per Capita vs Cost Per Liter by County')
+
 
