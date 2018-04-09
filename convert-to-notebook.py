@@ -6,7 +6,7 @@ with open('liquor.py') as f:
     src = f.read()
 
 src = src.replace('# coding: utf-8', '')
-cells = [new_code_cell(cell) for cell in re.split('\n\n\n# In\[[0-9]+\]:\n\n\n', src)]
+cells = [new_code_cell(cell) for cell in re.split('\n\n\n# In\[.+\]:\n\n\n', src)]
 cells.pop(0)
 
 nb = new_notebook(cells=cells)
