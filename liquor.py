@@ -83,6 +83,13 @@ income = poverty['Median_Household_Income'].sort_values(ascending=False)
 #income
 
 
+# In[56]:
+
+
+#histogram of all total incomes
+plt.hist(income);
+
+
 # In[9]:
 
 
@@ -129,7 +136,7 @@ liquor = liquor[overlap]
 liquor['County'].isin(income.index).value_counts()
 
 
-# In[14]:
+# In[59]:
 
 
 # Count sales by county
@@ -141,6 +148,26 @@ title = 'Total Sales by County ' + dateRange
 plot = countySales.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
+
+
+# In[92]:
+
+
+# Histogram
+fig1 = plt.hist(countySales, bins = 15)
+plt.title("Distribution of Alcohol Sales")
+plt.xlabel = 'Count of Alcohol Sales'
+plt.ylabel = 'Number of Counties'
+
+
+# In[93]:
+
+
+# Let's Zoom in on the left end of the distribution where most of our data lies
+fig1 = plt.hist(countySales[countySales.values < 250000], bins = 15)
+plt.title("Distribution of Alcohol Sales")
+plt.xlabel = 'Count of Alcohol Sales'
+plt.ylabel = 'Number of Counties'
 
 
 # In[54]:
