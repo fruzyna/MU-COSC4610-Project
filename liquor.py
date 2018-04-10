@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[83]:
 
 
 # COSC 4610 Final Project
@@ -9,19 +9,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
 import seaborn as sns
+import re
 
 sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[2]:
+# In[90]:
 
 
 # Read in liquor sales dataset (go make some coffee)
 liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', low_memory = False).sort_values('Date')
 
 
-# In[3]:
+# In[91]:
 
 
 # Makes all county names uniform (all caps, no "COUNTY")
@@ -30,8 +31,19 @@ def correctCounty(county):
         return county.upper().replace(' COUNTY', '')
     return str(county)
 
+# Filter into fewer categories
+cats = ['VODKA', 'TEQUILA', 'COCKTAILS?', 'GINS?', 'BRAND[(IES)Y]', 'WHISK[(IES)Y]', 'SCHNAPPS?', 'CREME', 'RUM', 'SCOTCH', 'ANISETTE', 'AMARETTO', 'BEER', 'BOURBON', 'TRIPLE SEC', 'DECANTERS', 'LIQUEURS?', 'SPIRITS?', 'SPECIAL']
+catNames = ['VODKA', 'TEQUILA', 'COCKTAILS', 'GINS', 'BRANDIES', 'WHISKIES', 'SCHNAPPS', 'CREME', 'RUM', 'SCOTCH', 'ANISETTE', 'AMARETTO', 'BEER', 'BOURBON', 'TRIPLE SEC', 'DECANTERS', 'LIQUEURS', 'SPIRITS', 'SPECIAL']
+def filterCategories(category):
+    for i in range(len(cats)):
+        cat = cats[i]
+        name = catNames[i]
+        if re.search(cat, category.upper()):
+            return name
+    return category.upper()
 
-# In[4]:
+
+# In[92]:
 
 
 # Trim unnecessary rows
@@ -44,11 +56,13 @@ if 'liquor' in locals():
     liquor = liquor.drop('Pack', axis=1)
 
 
-# In[5]:
+# In[93]:
 
 
 # Make county names uniform
 liquor['County'] = liquor['County'].apply(correctCounty)
+liquor['Category Name'] = liquor['Category Name'].astype(str)
+liquor['Gen Category'] = liquor['Category Name'].apply(filterCategories)
 # Remove dollar signs
 liquor['Sale (Dollars)'] = liquor['Sale (Dollars)'].str[1:]
 liquor['Sale (Dollars)'] = liquor['Sale (Dollars)'].astype(float)
@@ -97,6 +111,15 @@ plt.savefig('plots/DistIncome.png')
 # Plot median household income by county
 income.plot(kind='bar', figsize=(15,7))
 plt.savefig('plots/CountyMedianIncome.png')
+
+
+# In[95]:
+
+
+# Plot count of each general category
+catCounts = liquor['Gen Category'].value_counts()
+catCounts.plot(kind='bar', figsize=(15,7))
+plt.savefig('plots/Categories.png')
 
 
 # In[14]:
@@ -334,42 +357,69 @@ casey = liquor.loc[liquor['Store Name'].str.contains('Casey\'s')]
 casey['Store Name'].value_counts().describe()
 
 
-# In[44]:
+# In[68]:
 
 
 # Plot sales and income
-counties.plot(kind='scatter', y='Sales Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Sales Per Capita by County')
-plt.savefig('plots/SaleIncome.png')
+fig = sns.lmplot(y='Sales Per Capita', x='Median Household Income',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Median Household Income vs Liquor Sales Per Capita by County')
+fig.savefig('plots/SaleIncome.png')
 
 
-# In[45]:
+# In[67]:
 
 
 # Plot volume and income
-counties.plot(kind='scatter', y='Volume Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Volume Per Capita by County')
-plt.savefig('plots/VolumeIncome.png')
+fig = sns.lmplot(y='Volume Per Capita', x='Median Household Income',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Median Household Income vs Liquor Volume Per Capita by County')
+fig.savefig('plots/VolumeIncome.png')
 
 
-# In[46]:
+# In[65]:
 
 
 # Plot sale size and income
-counties.plot(kind='scatter', y='Volume Per Sale', x='Median Household Income', title='Median Household Income vs Volume Per Sale by County')
-plt.savefig('plots/SaleVolumeIncome.png')
+fig = sns.lmplot(y='Volume Per Sale', x='Median Household Income',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Median Household Income vs Volume Per Sale by County')
+fig.savefig('plots/SaleVolumeIncome.png')
 
 
-# In[48]:
+# In[63]:
 
 
 # Plot cost per liter and income
-counties.plot(kind='scatter', y='Spent Per Liter', x='Median Household Income', title='Median Household Income vs Cost Per Liter by County')
-plt.savefig('plots/CostIncome.png')
+fig = sns.lmplot(y='Spent Per Liter', x='Median Household Income',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Median Household Income vs Cost Per Liter by County')
+fig.savefig('plots/CostIncome.png')
 
 
-# In[51]:
+# In[62]:
 
 
-# Plot cpst per liter and sales
-counties.plot(kind='scatter', y='Spent Per Liter', x='Sales Per Capita', title='Sales Per Capita vs Cost Per Liter by County')
-plt.savefig('plots/CostSales.png')
+# Plot cost per liter and sales
+fig = sns.lmplot(y='Spent Per Liter', x='Sales Per Capita',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Sales Per Capita vs Cost Per Liter by County')
+fig.savefig('plots/CostSales.png')
+
+
+# In[61]:
+
+
+# Plot population and sales per capita
+fig = sns.lmplot(x='Estimated Population', y='Sales Per Capita',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Sales Per Capita vs Estimated Population by County')
+fig.savefig('plots/PopSales.png')
+
+
+# In[72]:
+
+
+# Most common types of drinks
+liquor['Category Name'].value_counts()
 
