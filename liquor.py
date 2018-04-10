@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 # COSC 4610 Final Project
@@ -14,14 +14,14 @@ sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[3]:
+# In[2]:
 
 
 # Read in liquor sales dataset (go make some coffee)
 liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', low_memory = False).sort_values('Date')
 
 
-# In[4]:
+# In[3]:
 
 
 # Makes all county names uniform (all caps, no "COUNTY")
@@ -31,7 +31,7 @@ def correctCounty(county):
     return str(county)
 
 
-# In[5]:
+# In[4]:
 
 
 # Trim unnecessary rows
@@ -44,7 +44,7 @@ if 'liquor' in locals():
     liquor = liquor.drop('Pack', axis=1)
 
 
-# In[6]:
+# In[5]:
 
 
 # Make county names uniform
@@ -59,7 +59,7 @@ liquor['State Bottle Retail'] = liquor['State Bottle Retail'].astype(float)
 liquor
 
 
-# In[7]:
+# In[6]:
 
 
 # Get range of dates from data
@@ -72,7 +72,7 @@ dateRange = str(earliest.strftime('%m/%d/%Y')) + ' to ' + str(latest.strftime('%
 delta
 
 
-# In[8]:
+# In[7]:
 
 
 # Read in poverty dataset and trim to median incomes by county
@@ -83,21 +83,23 @@ income = poverty['Median_Household_Income'].sort_values(ascending=False)
 #income
 
 
-# In[56]:
+# In[10]:
 
 
 #histogram of all total incomes
-plt.hist(income);
+plt.hist(income)
+plt.savefig('plots/DistIncome.png')
 
 
-# In[9]:
+# In[13]:
 
 
 # Plot median household income by county
 income.plot(kind='bar', figsize=(15,7))
+plt.savefig('plots/CountyMedianIncome.png')
 
 
-# In[10]:
+# In[14]:
 
 
 # The liquor sales have fake? counties, find them
@@ -105,7 +107,7 @@ overlap = liquor['County'].isin(income.index)
 overlap.value_counts()
 
 
-# In[11]:
+# In[15]:
 
 
 # Investigate the fake counties
@@ -114,7 +116,7 @@ liquor[fakeCounties].County.unique()
 # El PASO County is in Colorado so I'm not sure what it is doing in this dataset 
 
 
-# In[12]:
+# In[16]:
 
 
 fakeCountiesmapper = {
@@ -128,7 +130,7 @@ overlap = liquor['County'].isin(income.index)
 overlap.value_counts()
 
 
-# In[13]:
+# In[17]:
 
 
 # Remove leftover "fake" counties
@@ -136,7 +138,7 @@ liquor = liquor[overlap]
 liquor['County'].isin(income.index).value_counts()
 
 
-# In[59]:
+# In[18]:
 
 
 # Count sales by county
@@ -148,9 +150,10 @@ title = 'Total Sales by County ' + dateRange
 plot = countySales.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
+plt.savefig('plots/CountyTotalSales.png')
 
 
-# In[92]:
+# In[19]:
 
 
 # Histogram
@@ -158,9 +161,10 @@ fig1 = plt.hist(countySales, bins = 15)
 plt.title("Distribution of Alcohol Sales")
 plt.xlabel = 'Count of Alcohol Sales'
 plt.ylabel = 'Number of Counties'
+plt.savefig('plots/AlcoholSalesDistribution.png')
 
 
-# In[93]:
+# In[20]:
 
 
 # Let's Zoom in on the left end of the distribution where most of our data lies
@@ -168,9 +172,10 @@ fig1 = plt.hist(countySales[countySales.values < 250000], bins = 15)
 plt.title("Distribution of Alcohol Sales")
 plt.xlabel = 'Count of Alcohol Sales'
 plt.ylabel = 'Number of Counties'
+plt.savefig('plots/ZoomedAlcoholSalesDistribution.png')
 
 
-# In[54]:
+# In[21]:
 
 
 # Estimate populations by county
@@ -178,7 +183,7 @@ populations = (poverty['People_of_All_Ages_in_Poverty'] * 100 / poverty['Percent
 #populations
 
 
-# In[16]:
+# In[22]:
 
 
 # Calculate and plot liquor sales per capita per year
@@ -188,16 +193,17 @@ title = 'Avg Annual Per Capita Sales by County ' + dateRange
 plot = salesPerCapita.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
+plt.savefig('plots/SalesPerCapita.png')
 
 
-# In[17]:
+# In[23]:
 
 
 salesPerCapita['DICKINSON']
 salesPerCapita['FREMONT']
 
 
-# In[18]:
+# In[24]:
 
 
 # Get the total volume sold by county
@@ -211,7 +217,7 @@ for county in income.index:
 countyVolumes = countyVolumes.sort_values(ascending=False)
 
 
-# In[19]:
+# In[25]:
 
 
 # Plot volume per capita by county per year
@@ -221,16 +227,17 @@ title = 'Avg Annual Per Capita Volume Sold by County ' + dateRange
 plot = volumePerCapita.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
+plt.savefig('plots/VolumePerCapita.png')
 
 
-# In[38]:
+# In[26]:
 
 
 print('Dickneson: ', round(volumePerCapita['DICKINSON'],2))
 print('Fremont: ', round(volumePerCapita['FREMONT'],2))
 
 
-# In[21]:
+# In[27]:
 
 
 # Get the total spent by county
@@ -244,7 +251,7 @@ for county in income.index:
 countySpent = countySpent.sort_values(ascending=False)
 
 
-# In[22]:
+# In[28]:
 
 
 # Plot total spent per capita by county per year
@@ -253,16 +260,17 @@ title = 'Avg Cost Per Liter by County ' + dateRange
 plot = spentPerLiter.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Dollars Spent')
+plt.savefig('plots/CostPerLiter.png')
 
 
-# In[39]:
+# In[29]:
 
 
 spentPerLiter.describe()
 round(spentPerLiter['FREMONT'],2)
 
 
-# In[24]:
+# In[30]:
 
 
 # Volume per sale by county, these numbers seem fishy
@@ -271,9 +279,20 @@ title = 'Avg Volume Per Sale by County ' + dateRange
 plot = volumePerSale.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
+plt.savefig('plots/VolumePerSale.png')
 
 
-# In[25]:
+# In[43]:
+
+
+# Merge all county data
+counties = pd.concat([income, populations, salesPerCapita, volumePerCapita, spentPerLiter, volumePerSale], axis=1)
+counties.columns = ['Median Household Income', 'Estimated Population', 'Sales Per Capita', 'Volume Per Capita', 'Spent Per Liter', 'Volume Per Sale']
+counties.to_csv('clean_data/county_stats.csv')
+counties
+
+
+# In[31]:
 
 
 # This is a waste of time for now
@@ -285,7 +304,7 @@ plot.set_ylabel('Liquor Volume (L)')
 #liquor['Median Household Income'] = liquor['County'].apply(getIncome)
 
 
-# In[42]:
+# In[32]:
 
 
 # Investigating Fremont
@@ -293,21 +312,21 @@ fremont = liquor.loc[liquor['County'] == 'FREMONT']
 fremont['Store Name'].value_counts()
 
 
-# In[43]:
+# In[33]:
 
 
 # Highest amount of purchases
 liquor['Store Name'].value_counts().head()
 
 
-# In[44]:
+# In[34]:
 
 
 #Lowest amount of purchases
 liquor['Store Name'].value_counts().tail()
 
 
-# In[45]:
+# In[35]:
 
 
 # Investigating Casey's
@@ -315,48 +334,42 @@ casey = liquor.loc[liquor['Store Name'].str.contains('Casey\'s')]
 casey['Store Name'].value_counts().describe()
 
 
-# In[29]:
+# In[44]:
 
 
 # Plot sales and income
-salesIncome = pd.concat([salesPerCapita, income], axis=1)
-salesIncome.columns = ['Sales Per Capita', 'Median Household Income']
-salesIncome.plot(kind='scatter', y='Sales Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Sales Per Capita by County')
+counties.plot(kind='scatter', y='Sales Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Sales Per Capita by County')
+plt.savefig('plots/SaleIncome.png')
 
 
-# In[30]:
+# In[45]:
 
 
 # Plot volume and income
-volumeIncome = pd.concat([volumePerCapita, income], axis=1)
-volumeIncome.columns = ['Volume Per Capita', 'Median Household Income']
-volumeIncome.plot(kind='scatter', y='Volume Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Volume Per Capita by County')
+counties.plot(kind='scatter', y='Volume Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Volume Per Capita by County')
+plt.savefig('plots/VolumeIncome.png')
 
 
-# In[31]:
+# In[46]:
 
 
 # Plot sale size and income
-sizeIncome = pd.concat([volumePerSale, income], axis=1)
-sizeIncome.columns = ['Volume Per Sale', 'Median Household Income']
-sizeIncome.plot(kind='scatter', y='Volume Per Sale', x='Median Household Income', title='Median Household Income vs Volume Per Sale by County')
+counties.plot(kind='scatter', y='Volume Per Sale', x='Median Household Income', title='Median Household Income vs Volume Per Sale by County')
+plt.savefig('plots/SaleVolumeIncome.png')
 
 
-# In[32]:
+# In[48]:
 
 
 # Plot cost per liter and income
-costIncome = pd.concat([spentPerLiter, income], axis=1)
-costIncome.columns = ['Cost Per Liter', 'Median Household Income']
-costIncome.plot(kind='scatter', y='Cost Per Liter', x='Median Household Income', title='Median Household Income vs Cost Per Liter by County')
+counties.plot(kind='scatter', y='Spent Per Liter', x='Median Household Income', title='Median Household Income vs Cost Per Liter by County')
+plt.savefig('plots/CostIncome.png')
 
 
-# In[33]:
+# In[51]:
 
 
 # Plot cpst per liter and sales
-costSales = pd.concat([spentPerLiter, salesPerCapita], axis=1)
-costSales.columns = ['Cost Per Liter', 'Sales Per Capita']
-costSales.plot(kind='scatter', y='Cost Per Liter', x='Sales Per Capita', title='Sales Per Capita vs Cost Per Liter by County')
-
+counties.plot(kind='scatter', y='Spent Per Liter', x='Sales Per Capita', title='Sales Per Capita vs Cost Per Liter by County')
+plt.savefig('plots/CostSales.png')
 
