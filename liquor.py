@@ -305,12 +305,24 @@ plot.set_ylabel('Liquor Volume (L)')
 plt.savefig('plots/VolumePerSale.png')
 
 
-# In[43]:
+# In[105]:
+
+
+# Cost per sale by county, these numbers seem fishy
+spentPerSale = (countySpent / countySales).sort_values(ascending=False)
+title = 'Avg Cost Per Sale by County ' + dateRange
+plot = spentPerSale.plot(kind='bar', figsize=(15,7), title=title)
+plot.set_xlabel('County')
+plot.set_ylabel('Total Cost')
+plt.savefig('plots/CostPerSale.png')
+
+
+# In[106]:
 
 
 # Merge all county data
-counties = pd.concat([income, populations, salesPerCapita, volumePerCapita, spentPerLiter, volumePerSale], axis=1)
-counties.columns = ['Median Household Income', 'Estimated Population', 'Sales Per Capita', 'Volume Per Capita', 'Spent Per Liter', 'Volume Per Sale']
+counties = pd.concat([income, populations, salesPerCapita, volumePerCapita, spentPerLiter, volumePerSale, spentPerSale], axis=1)
+counties.columns = ['Median Household Income', 'Estimated Population', 'Sales Per Capita', 'Volume Per Capita', 'Spent Per Liter', 'Volume Per Sale', 'Spent Per Sale']
 counties.to_csv('clean_data/county_stats.csv')
 counties
 
@@ -395,6 +407,16 @@ fig = sns.lmplot(y='Spent Per Liter', x='Median Household Income',data=counties,
 ax = plt.gca()
 ax.set_title('Median Household Income vs Cost Per Liter by County')
 fig.savefig('plots/CostIncome.png')
+
+
+# In[109]:
+
+
+# Plot cost per sale and income
+fig = sns.lmplot(y='Spent Per Sale', x='Median Household Income',data=counties,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Median Household Income vs Spent Per Sale by County')
+fig.savefig('plots/SpentIncome.png')
 
 
 # In[62]:
