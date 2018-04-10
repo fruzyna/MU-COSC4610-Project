@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
 import seaborn as sns
+import statsmodels.api as sm
 import re
 
 sns.set(style="ticks", color_codes=True)
@@ -22,7 +23,7 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', low_memory = False).sort_values('Date')
 
 
-# In[91]:
+# In[110]:
 
 
 # Makes all county names uniform (all caps, no "COUNTY")
@@ -40,7 +41,7 @@ def filterCategories(category):
         name = catNames[i]
         if re.search(cat, category.upper()):
             return name
-    return category.upper()
+    return 'Other'
 
 
 # In[92]:
@@ -56,7 +57,7 @@ if 'liquor' in locals():
     liquor = liquor.drop('Pack', axis=1)
 
 
-# In[93]:
+# In[111]:
 
 
 # Make county names uniform
@@ -113,7 +114,7 @@ income.plot(kind='bar', figsize=(15,7))
 plt.savefig('plots/CountyMedianIncome.png')
 
 
-# In[95]:
+# In[112]:
 
 
 # Plot count of each general category
@@ -379,6 +380,16 @@ ax.set_title('Median Household Income vs Liquor Sales Per Capita by County')
 fig.savefig('plots/SaleIncome.png')
 
 
+# In[118]:
+
+
+X = counties['Median Household Income']
+Y = counties['Sales Per Capita']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
 # In[67]:
 
 
@@ -387,6 +398,16 @@ fig = sns.lmplot(y='Volume Per Capita', x='Median Household Income',data=countie
 ax = plt.gca()
 ax.set_title('Median Household Income vs Liquor Volume Per Capita by County')
 fig.savefig('plots/VolumeIncome.png')
+
+
+# In[119]:
+
+
+X = counties['Median Household Income']
+Y = counties['Volume Per Capita']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
 
 
 # In[65]:
@@ -399,6 +420,16 @@ ax.set_title('Median Household Income vs Volume Per Sale by County')
 fig.savefig('plots/SaleVolumeIncome.png')
 
 
+# In[120]:
+
+
+X = counties['Median Household Income']
+Y = counties['Volume Per Sale']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
 # In[63]:
 
 
@@ -407,6 +438,16 @@ fig = sns.lmplot(y='Spent Per Liter', x='Median Household Income',data=counties,
 ax = plt.gca()
 ax.set_title('Median Household Income vs Cost Per Liter by County')
 fig.savefig('plots/CostIncome.png')
+
+
+# In[121]:
+
+
+X = counties['Median Household Income']
+Y = counties['Spent Per Liter']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
 
 
 # In[109]:
@@ -419,6 +460,16 @@ ax.set_title('Median Household Income vs Spent Per Sale by County')
 fig.savefig('plots/SpentIncome.png')
 
 
+# In[122]:
+
+
+X = counties['Median Household Income']
+Y = counties['Spent Per Sale']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
 # In[62]:
 
 
@@ -429,6 +480,16 @@ ax.set_title('Sales Per Capita vs Cost Per Liter by County')
 fig.savefig('plots/CostSales.png')
 
 
+# In[123]:
+
+
+X = counties['Sales Per Capita']
+Y = counties['Spent Per Liter']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
 # In[61]:
 
 
@@ -437,6 +498,16 @@ fig = sns.lmplot(x='Estimated Population', y='Sales Per Capita',data=counties,fi
 ax = plt.gca()
 ax.set_title('Sales Per Capita vs Estimated Population by County')
 fig.savefig('plots/PopSales.png')
+
+
+# In[124]:
+
+
+X = counties['Estimated Population']
+Y = counties['Sales Per Capita']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
 
 
 # In[72]:
