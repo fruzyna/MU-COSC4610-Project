@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[83]:
+# In[1]:
 
 
 # COSC 4610 Final Project
@@ -9,61 +9,26 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
 import seaborn as sns
-import statsmodels.api as sm
-import re
 
 sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[90]:
+# In[6]:
 
 
 # Read in liquor sales dataset (go make some coffee)
-liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', low_memory = False).sort_values('Date')
+Columns = ['Invoice/Item Number','Date','Store Number', 'Store Name', 'County','Category','Category Name',
+           'Vendor Number','Vendor Name','Item Number','Item Description','Bottle Volume (ml)','State Bottle Cost',
+           'State Bottle Retail', 'Bottles Sold','Sale (Dollars)','Volume Sold (Liters)']
+liquor = pd.read_csv('data/Iowa_Liquor_Sales.csv', parse_dates=True, index_col='Invoice/Item Number', usecols = Columns, low_memory = False).sort_values('Date')
 
 
-# In[110]:
-
-
-# Makes all county names uniform (all caps, no "COUNTY")
-def correctCounty(county):
-    if isinstance(county, str):
-        return county.upper().replace(' COUNTY', '')
-    return str(county)
-
-# Filter into fewer categories
-cats = ['VODKA', 'TEQUILA', 'COCKTAILS?', 'GINS?', 'BRAND[(IES)Y]', 'WHISK[(IES)Y]', 'SCHNAPPS?', 'CREME', 'RUM', 'SCOTCH', 'ANISETTE', 'AMARETTO', 'BEER', 'BOURBON', 'TRIPLE SEC', 'DECANTERS', 'LIQUEURS?', 'SPIRITS?', 'SPECIAL']
-catNames = ['VODKA', 'TEQUILA', 'COCKTAILS', 'GINS', 'BRANDIES', 'WHISKIES', 'SCHNAPPS', 'CREME', 'RUM', 'SCOTCH', 'ANISETTE', 'AMARETTO', 'BEER', 'BOURBON', 'TRIPLE SEC', 'DECANTERS', 'LIQUEURS', 'SPIRITS', 'SPECIAL']
-def filterCategories(category):
-    for i in range(len(cats)):
-        cat = cats[i]
-        name = catNames[i]
-        if re.search(cat, category.upper()):
-            return name
-    return 'Other'
-
-
-# In[92]:
-
-
-# Trim unnecessary rows
-if 'liquor' in locals():
-    liquor = liquor.drop('Address', axis=1)
-    liquor = liquor.drop('City', axis=1)
-    liquor = liquor.drop('Zip Code', axis=1)
-    liquor = liquor.drop('County Number', axis=1)
-    liquor = liquor.drop('Volume Sold (Gallons)', axis=1)
-    liquor = liquor.drop('Pack', axis=1)
-
-
-# In[111]:
+# In[9]:
 
 
 # Make county names uniform
 liquor['County'] = liquor['County'].apply(correctCounty)
-liquor['Category Name'] = liquor['Category Name'].astype(str)
-liquor['Gen Category'] = liquor['Category Name'].apply(filterCategories)
 # Remove dollar signs
 liquor['Sale (Dollars)'] = liquor['Sale (Dollars)'].str[1:]
 liquor['Sale (Dollars)'] = liquor['Sale (Dollars)'].astype(float)
@@ -71,10 +36,10 @@ liquor['State Bottle Cost'] = liquor['State Bottle Cost'].str[1:]
 liquor['State Bottle Cost'] = liquor['State Bottle Cost'].astype(float)
 liquor['State Bottle Retail'] = liquor['State Bottle Retail'].str[1:]
 liquor['State Bottle Retail'] = liquor['State Bottle Retail'].astype(float)
-liquor
+liquor.head()
 
 
-# In[6]:
+# In[10]:
 
 
 # Get range of dates from data
@@ -87,7 +52,7 @@ dateRange = str(earliest.strftime('%m/%d/%Y')) + ' to ' + str(latest.strftime('%
 delta
 
 
-# In[7]:
+# In[11]:
 
 
 # Read in poverty dataset and trim to median incomes by county
@@ -98,12 +63,11 @@ income = poverty['Median_Household_Income'].sort_values(ascending=False)
 #income
 
 
-# In[10]:
+# In[12]:
 
 
 #histogram of all total incomes
-plt.hist(income)
-plt.savefig('plots/DistIncome.png')
+plt.hist(income);
 
 
 # In[13]:
@@ -111,16 +75,6 @@ plt.savefig('plots/DistIncome.png')
 
 # Plot median household income by county
 income.plot(kind='bar', figsize=(15,7))
-plt.savefig('plots/CountyMedianIncome.png')
-
-
-# In[112]:
-
-
-# Plot count of each general category
-catCounts = liquor['Gen Category'].value_counts()
-catCounts.plot(kind='bar', figsize=(15,7))
-plt.savefig('plots/Categories.png')
 
 
 # In[14]:
@@ -174,7 +128,6 @@ title = 'Total Sales by County ' + dateRange
 plot = countySales.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
-plt.savefig('plots/CountyTotalSales.png')
 
 
 # In[19]:
@@ -185,7 +138,6 @@ fig1 = plt.hist(countySales, bins = 15)
 plt.title("Distribution of Alcohol Sales")
 plt.xlabel = 'Count of Alcohol Sales'
 plt.ylabel = 'Number of Counties'
-plt.savefig('plots/AlcoholSalesDistribution.png')
 
 
 # In[20]:
@@ -196,7 +148,6 @@ fig1 = plt.hist(countySales[countySales.values < 250000], bins = 15)
 plt.title("Distribution of Alcohol Sales")
 plt.xlabel = 'Count of Alcohol Sales'
 plt.ylabel = 'Number of Counties'
-plt.savefig('plots/ZoomedAlcoholSalesDistribution.png')
 
 
 # In[21]:
@@ -217,17 +168,16 @@ title = 'Avg Annual Per Capita Sales by County ' + dateRange
 plot = salesPerCapita.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Sales')
-plt.savefig('plots/SalesPerCapita.png')
 
 
-# In[23]:
+# In[ ]:
 
 
 salesPerCapita['DICKINSON']
 salesPerCapita['FREMONT']
 
 
-# In[24]:
+# In[ ]:
 
 
 # Get the total volume sold by county
@@ -251,17 +201,16 @@ title = 'Avg Annual Per Capita Volume Sold by County ' + dateRange
 plot = volumePerCapita.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
-plt.savefig('plots/VolumePerCapita.png')
 
 
-# In[26]:
+# In[41]:
 
 
 print('Dickneson: ', round(volumePerCapita['DICKINSON'],2))
 print('Fremont: ', round(volumePerCapita['FREMONT'],2))
 
 
-# In[27]:
+# In[42]:
 
 
 # Get the total spent by county
@@ -284,7 +233,6 @@ title = 'Avg Cost Per Liter by County ' + dateRange
 plot = spentPerLiter.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Dollars Spent')
-plt.savefig('plots/CostPerLiter.png')
 
 
 # In[29]:
@@ -303,29 +251,6 @@ title = 'Avg Volume Per Sale by County ' + dateRange
 plot = volumePerSale.plot(kind='bar', figsize=(15,7), title=title)
 plot.set_xlabel('County')
 plot.set_ylabel('Liquor Volume (L)')
-plt.savefig('plots/VolumePerSale.png')
-
-
-# In[105]:
-
-
-# Cost per sale by county, these numbers seem fishy
-spentPerSale = (countySpent / countySales).sort_values(ascending=False)
-title = 'Avg Cost Per Sale by County ' + dateRange
-plot = spentPerSale.plot(kind='bar', figsize=(15,7), title=title)
-plot.set_xlabel('County')
-plot.set_ylabel('Total Cost')
-plt.savefig('plots/CostPerSale.png')
-
-
-# In[106]:
-
-
-# Merge all county data
-counties = pd.concat([income, populations, salesPerCapita, volumePerCapita, spentPerLiter, volumePerSale, spentPerSale], axis=1)
-counties.columns = ['Median Household Income', 'Estimated Population', 'Sales Per Capita', 'Volume Per Capita', 'Spent Per Liter', 'Volume Per Sale', 'Spent Per Sale']
-counties.to_csv('clean_data/county_stats.csv')
-counties
 
 
 # In[31]:
@@ -370,149 +295,162 @@ casey = liquor.loc[liquor['Store Name'].str.contains('Casey\'s')]
 casey['Store Name'].value_counts().describe()
 
 
-# In[68]:
+# In[36]:
 
 
 # Plot sales and income
-fig = sns.lmplot(y='Sales Per Capita', x='Median Household Income',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Median Household Income vs Liquor Sales Per Capita by County')
-fig.savefig('plots/SaleIncome.png')
+salesIncome = pd.concat([salesPerCapita, income], axis=1)
+salesIncome.columns = ['Sales Per Capita', 'Median Household Income']
+salesIncome.plot(kind='scatter', y='Sales Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Sales Per Capita by County')
 
 
-# In[118]:
-
-
-X = counties['Median Household Income']
-Y = counties['Sales Per Capita']
-
-model = sm.OLS(Y,X).fit()
-print(model.summary())
-
-
-# In[67]:
+# In[37]:
 
 
 # Plot volume and income
-fig = sns.lmplot(y='Volume Per Capita', x='Median Household Income',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Median Household Income vs Liquor Volume Per Capita by County')
-fig.savefig('plots/VolumeIncome.png')
+volumeIncome = pd.concat([volumePerCapita, income], axis=1)
+volumeIncome.columns = ['Volume Per Capita', 'Median Household Income']
+volumeIncome.plot(kind='scatter', y='Volume Per Capita', x='Median Household Income', title='Median Household Income vs Liquor Volume Per Capita by County')
 
 
-# In[119]:
-
-
-X = counties['Median Household Income']
-Y = counties['Volume Per Capita']
-
-model = sm.OLS(Y,X).fit()
-print(model.summary())
-
-
-# In[65]:
+# In[38]:
 
 
 # Plot sale size and income
-fig = sns.lmplot(y='Volume Per Sale', x='Median Household Income',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Median Household Income vs Volume Per Sale by County')
-fig.savefig('plots/SaleVolumeIncome.png')
+sizeIncome = pd.concat([volumePerSale, income], axis=1)
+sizeIncome.columns = ['Volume Per Sale', 'Median Household Income']
+sizeIncome.plot(kind='scatter', y='Volume Per Sale', x='Median Household Income', title='Median Household Income vs Volume Per Sale by County')
 
 
-# In[120]:
+# In[39]:
 
 
-X = counties['Median Household Income']
-Y = counties['Volume Per Sale']
+# Plot cost per liter and income
+costIncome = pd.concat([spentPerLiter, income], axis=1)
+costIncome.columns = ['Cost Per Liter', 'Median Household Income']
+costIncome.plot(kind='scatter', y='Cost Per Liter', x='Median Household Income', title='Median Household Income vs Cost Per Liter by County')
 
-model = sm.OLS(Y,X).fit()
-print(model.summary())
+
+# In[40]:
+
+
+# Plot cpst per liter and sales
+costSales = pd.concat([spentPerLiter, salesPerCapita], axis=1)
+costSales.columns = ['Cost Per Liter', 'Sales Per Capita']
+costSales.plot(kind='scatter', y='Cost Per Liter', x='Sales Per Capita', title='Sales Per Capita vs Cost Per Liter by County')
 
 
 # In[63]:
 
 
-# Plot cost per liter and income
-fig = sns.lmplot(y='Spent Per Liter', x='Median Household Income',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Median Household Income vs Cost Per Liter by County')
-fig.savefig('plots/CostIncome.png')
+liquor = liquor.merge(populations.to_frame(), how = 'outer', left_on = 'County',right_index = True)
 
 
-# In[121]:
+# In[77]:
 
 
-X = counties['Median Household Income']
-Y = counties['Spent Per Liter']
-
-model = sm.OLS(Y,X).fit()
-print(model.summary())
+countySales = liquor['County'].value_counts()
 
 
-# In[109]:
+# In[95]:
 
 
-# Plot cost per sale and income
-fig = sns.lmplot(y='Spent Per Sale', x='Median Household Income',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Median Household Income vs Spent Per Sale by County')
-fig.savefig('plots/SpentIncome.png')
+aggregatedData = income.to_frame()
+aggregatedData = aggregatedData.merge(countySales.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {"County" : "nSales"}, inplace = True)
+aggregatedData = aggregatedData.merge(populations.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Population"}, inplace = True)
+aggregatedData = aggregatedData.merge(salesPerCapita.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Sales Per Capita"}, inplace = True)
+aggregatedData = aggregatedData.merge(countyVolumes.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Volumes"}, inplace = True)
+aggregatedData = aggregatedData.merge(volumePerCapita.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Volume Per Capita"}, inplace = True)
+aggregatedData = aggregatedData.merge(countySpent.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Total Alcohol Sales"}, inplace = True)
+aggregatedData = aggregatedData.merge(spentPerLiter.to_frame(), left_index = True, right_index = True)
+aggregatedData.rename(columns = {0 : "Price per Liter"}, inplace = True)
+aggregatedData.head()
 
 
-# In[122]:
+# In[112]:
 
 
-X = counties['Median Household Income']
-Y = counties['Spent Per Sale']
+def correctCategory(category):
+    if isinstance(category, str):
+        category = category.upper()
+        if 'VODKA' in category:
+            category = 'VODKA'
+        elif 'GIN' in category:
+            category = 'GINS'
+        elif 'COCKTAILS' in category:
+            category = 'COCKTAILS'
+        elif 'RUM' in category:
+            category = 'RUM'
+        elif 'WHISKEY' in category:
+            category = 'WHISKEY'
+        elif 'WHISKIE' in category:
+            category = 'WHISKEY'
+        elif 'BOURBON' in category:
+            category = 'BOURBON'
+        elif 'SCOTCH' in category:
+            category = 'SCOTCH'
+        elif 'TEQUILA' in category:
+            category = 'TEQUILA'
+        elif 'BRANDIES' in category:
+            category = 'BRANDIES'
+        elif 'LIQUEUR' in category:
+            category = 'LIQUEUR'
+        elif 'SPIRITS' in category:
+            category = 'SPIRITS'
+        elif 'SCHNAPPS' in category:
+            category = 'SCHNAPPS'
+        else:
+            category = 'OTHER'
+        return category
+    return str(category)
 
-model = sm.OLS(Y,X).fit()
-print(model.summary())
+
+# In[8]:
 
 
-# In[62]:
+# Makes all county names uniform (all caps, no "COUNTY")
+def correctCounty(county):
+    if isinstance(county, str):
+        return county.upper().replace(' COUNTY', '')
+    return str(county)
+liquor.head()
 
 
-# Plot cost per liter and sales
-fig = sns.lmplot(y='Spent Per Liter', x='Sales Per Capita',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Sales Per Capita vs Cost Per Liter by County')
-fig.savefig('plots/CostSales.png')
+# In[117]:
+
+
+liquor['Category Name'] = liquor['Category Name'].apply(correctCategory)
+categoryCounts = liquor.groupby(['County','Category Name']).count()
+categoryCounts = categoryCounts.Date
 
 
 # In[123]:
 
 
-X = counties['Sales Per Capita']
-Y = counties['Spent Per Liter']
-
-model = sm.OLS(Y,X).fit()
-print(model.summary())
+categoryCounts = categoryCounts.to_frame().unstack();
 
 
-# In[61]:
+# In[125]:
 
 
-# Plot population and sales per capita
-fig = sns.lmplot(x='Estimated Population', y='Sales Per Capita',data=counties,fit_reg=True)
-ax = plt.gca()
-ax.set_title('Sales Per Capita vs Estimated Population by County')
-fig.savefig('plots/PopSales.png')
+categoryCounts.head()
 
 
 # In[124]:
 
 
-X = counties['Estimated Population']
-Y = counties['Sales Per Capita']
-
-model = sm.OLS(Y,X).fit()
-print(model.summary())
+aggregatedData = aggregatedData.merge(categoryCounts, left_index = True, right_index = True);
+aggregatedData.head()
 
 
-# In[72]:
+# In[127]:
 
 
-# Most common types of drinks
-liquor['Category Name'].value_counts()
+aggregatedData.to_csv('aggregatedData.csv')
 
