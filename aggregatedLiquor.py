@@ -1,19 +1,20 @@
 
 # coding: utf-8
 
-# In[59]:
+# In[247]:
 
 
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
+import numpy
 import seaborn as sns
 
 sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[73]:
+# In[248]:
 
 
 #Read in aggregated data
@@ -25,7 +26,8 @@ liquor.head()
 # 
 # ##### After some investigation, it was determined that Scotch had a value of nan for Friedmont County. We replaced this with a 0 representing no Scotch Sales
 
-# In[87]:
+
+# In[249]:
 
 
 liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
@@ -33,7 +35,8 @@ liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
 
 # ##### We also convert sales of each liquor into percentages instead of whole sales so that the population/total number of sales doesn't bias these values
 
-# In[75]:
+
+# In[250]:
 
 
 liquor['BOURBON'] = liquor['BOURBON']/liquor['nSales']; 
@@ -50,6 +53,7 @@ liquor['TEQUILA'] = liquor['TEQUILA']/liquor['nSales'];
 liquor['VODKA'] = liquor['VODKA']/liquor['nSales']; 
 liquor['WHISKEY'] = liquor['WHISKEY']/liquor['nSales']; 
 
+liquor.head()
 
 # ## Linear Regression Model Fitting
 # 
@@ -57,7 +61,8 @@ liquor['WHISKEY'] = liquor['WHISKEY']/liquor['nSales'];
 # 
 # ##### In my first model, I want to see if we can use income to predict the volume of alcohol purchased. Since population clearly has a large effect on volume of alcohol sold, I used volume per capita. A better way of doing this might be to use population as a variable, but I thought that would give us a better idea of the exact impact of income
 
-# In[ ]:
+
+# In[251]:
 
 
 from sklearn import linear_model
@@ -90,7 +95,8 @@ print('Score: %.2f' % reg.score(X_train, y_train))
 # 
 # ##### Let's plot the results to verify
 
-# In[89]:
+
+# In[252]:
 
 
 # Plot outputs
@@ -107,7 +113,8 @@ plt.yticks();
 # 
 # ##### This time I wanted to see if income affected price. This seems like it would have a higher correlation. It turns out it also isn't that significant as we again have a pretty low score.
 
-# In[90]:
+
+# In[253]:
 
 
 reg = linear_model.LinearRegression(normalize = True)
@@ -142,12 +149,72 @@ plt.xticks();
 plt.yticks();
 
 
-# In[76]:
+# In[254]:
 
 
+liquor.loc['MEAN'] = liquor.apply(numpy.mean)
+liquor.loc['MEDIAN'] = liquor.apply(numpy.median)
 liquor.head()
 
 
 # # Next Steps
 # 
 # ## I think we should categorize all of our variables. I think we don't have enough data points to capture the nuances in large values like median income and number of total sales. This would also allow us to start doing association rules
+
+
+# In[255]:
+
+
+categoryPercents = liquor[['BOURBON', 'BRANDIES', 'COCKTAILS', 'GINS', 'LIQUEUR', 'OTHER', 'RUM', 'SCHNAPPS', 'SCOTCH', 'SPIRITS', 'TEQUILA', 'VODKA', 'WHISKEY']]
+categoryPercents.head()
+
+
+# In[256]:
+
+
+# Pretty much worthless
+#fig,axes = plt.subplots(nrows=10, ncols=10, sharex=True, sharey=True)
+#fig.set_figheight(15)
+#fig.set_figwidth(15)
+#axes_list = [item for sublist in axes for item in sublist]
+#for county in categoryPercents.index:
+#    ax = axes_list.pop(0)
+#    categoryPercents.loc[county].plot(kind='bar', ax=ax)
+
+
+# In[257]:
+
+
+# Pretty much worthless
+#fig,axes = plt.subplots(nrows=3, ncols=5)
+#fig.set_figheight(15)
+#fig.set_figwidth(15)
+#axes_list = [item for sublist in axes for item in sublist]
+#for cat in list(categoryPercents):
+#    ax = axes_list.pop(0)
+#    categoryPercents[cat].plot(kind='bar', ax=ax)
+
+
+# In[285]:
+
+
+averaged = pd.DataFrame(index=categoryPercents.index, columns=list(categoryPercents))
+for county in categoryPercents.index:
+    overs = 0
+    for cat in list(categoryPercents):
+        newVal = categoryPercents.loc[county, cat] - categoryPercents.loc['MEDIAN', cat]
+        averaged.loc[county, cat] = newVal
+        overs += int(100 * abs(newVal) / 2)
+    if overs < 3:
+        averaged = averaged.drop(county, axis=0)
+    
+averaged = averaged[averaged.columns].astype(float)
+averaged
+
+
+# In[286]:
+
+
+f,ax = plt.subplots(figsize=(15, 15))
+sns.heatmap(averaged, annot=True, fmt="d", linewidths=.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
+
