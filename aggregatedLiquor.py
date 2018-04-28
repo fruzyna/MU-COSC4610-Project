@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[84]:
+# In[236]:
 
 
 import pandas as pd
@@ -11,12 +11,13 @@ import sklearn.cluster as sk
 import numpy
 import seaborn as sns
 import matplotlib.patches as patches
+import statsmodels.api as sm
 
 sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[85]:
+# In[237]:
 
 
 #Read in aggregated data
@@ -29,7 +30,7 @@ liquor.head()
 # ##### After some investigation, it was determined that Scotch had a value of nan for Friedmont County. We replaced this with a 0 representing no Scotch Sales
 
 
-# In[86]:
+# In[238]:
 
 
 liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
@@ -38,7 +39,7 @@ liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
 # ##### We also convert sales of each liquor into percentages instead of whole sales so that the population/total number of sales doesn't bias these values
 
 
-# In[87]:
+# In[239]:
 
 
 liquor['BOURBON'] = liquor['BOURBON']/liquor['nSales']; 
@@ -64,7 +65,7 @@ liquor.head()
 # ##### In my first model, I want to see if we can use income to predict the volume of alcohol purchased. Since population clearly has a large effect on volume of alcohol sold, I used volume per capita. A better way of doing this might be to use population as a variable, but I thought that would give us a better idea of the exact impact of income
 
 
-# In[88]:
+# In[240]:
 
 
 from sklearn import linear_model
@@ -98,7 +99,7 @@ print('Score: %.2f' % reg.score(X_train, y_train))
 # ##### Let's plot the results to verify
 
 
-# In[89]:
+# In[241]:
 
 
 # Plot outputs
@@ -116,7 +117,7 @@ plt.yticks();
 # ##### This time I wanted to see if income affected price. This seems like it would have a higher correlation. It turns out it also isn't that significant as we again have a pretty low score.
 
 
-# In[90]:
+# In[242]:
 
 
 reg = linear_model.LinearRegression(normalize = True)
@@ -151,7 +152,7 @@ plt.xticks();
 plt.yticks();
 
 
-# In[91]:
+# In[243]:
 
 
 liquor.loc['MEAN'] = liquor.apply(numpy.mean)
@@ -164,14 +165,14 @@ liquor.head()
 # ## I think we should categorize all of our variables. I think we don't have enough data points to capture the nuances in large values like median income and number of total sales. This would also allow us to start doing association rules
 
 
-# In[92]:
+# In[244]:
 
 
 categoryPercents = liquor[['BOURBON', 'BRANDIES', 'COCKTAILS', 'GINS', 'LIQUEUR', 'OTHER', 'RUM', 'SCHNAPPS', 'SCOTCH', 'SPIRITS', 'TEQUILA', 'VODKA', 'WHISKEY']]
 categoryPercents.head()
 
 
-# In[93]:
+# In[245]:
 
 
 # Pretty much worthless
@@ -184,7 +185,7 @@ categoryPercents.head()
 #    categoryPercents.loc[county].plot(kind='bar', ax=ax)
 
 
-# In[94]:
+# In[246]:
 
 
 # Pretty much worthless
@@ -197,7 +198,7 @@ categoryPercents.head()
 #    categoryPercents[cat].plot(kind='bar', ax=ax)
 
 
-# In[95]:
+# In[247]:
 
 
 # Make dataframe of deltas from average and one thats filtered
@@ -223,15 +224,17 @@ averaged = averaged[averaged.columns].astype(float)
 lean = lean[lean.columns].astype(float)
 
 
-# In[96]:
+# In[248]:
 
 
 # Plot lean on heat map with a different color for every 0.1  +/- 0.05
 f,ax = plt.subplots(figsize=(15, 15))
 sns.heatmap(lean, annot=True, linewidths=0.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
+ax.set_title('Percentage of Total County Sales for Categories Minus Medians')
+f.savefig('plots/Heatmap.png')
 
 
-# In[97]:
+# In[249]:
 
 
 lean.plot(kind='scatter', x='VODKA', y='WHISKEY', title='Vodka and Whisky Percentage of Sales - Median by County, Filtered')
@@ -239,9 +242,10 @@ plt.xlabel('Vodka Percentage of Sales - Median')
 plt.ylabel('Whisky Percentage of Sales - Median')
 
 
-# In[98]:
+# In[250]:
 
 
+# Calculate the average income of a cluster of counties
 def getGroupAverage(df, group):
     counties = df.loc[df['Group'] == group].index
     total = 0
@@ -249,17 +253,19 @@ def getGroupAverage(df, group):
         total += liquor.loc[county, 'Median_Household_Income']
     return total / len(counties)
 
+# Adds a MHI column to the given dataframe
 def addIncome(df):
     for county in df.index:
         df.loc[county, 'MHI'] = liquor.loc[county, 'Median_Household_Income']
     return df
 
+# Sets a custom color palette for clusters
 colors = ['r','b','y','g','c','m']
 def getColors(labels):
     return [colors[l] for l in labels]
 
 
-# In[111]:
+# In[251]:
 
 
 # Setup kmeans
@@ -277,9 +283,10 @@ plt.ylabel('Whisky Percentage of Sales - Median')
 rect = patches.Rectangle((-0.02,-0.02), 0.04, 0.04, linewidth=1, edgecolor='r', facecolor='none')
 ax.add_patch(rect)
 plt.show()
+fig.savefig('plots/Lean3Clusters.png')
 
 
-# In[113]:
+# In[252]:
 
 
 lean['Group'] = kmeans.labels_
@@ -288,14 +295,14 @@ print('Group 1', getGroupAverage(lean, 1))
 print('Group 2', getGroupAverage(lean, 2))
 
 
-# In[101]:
+# In[253]:
 
 
 withIncome = addIncome(lean)
 plt.scatter(withIncome['Group'], withIncome['MHI'])
 
 
-# In[102]:
+# In[254]:
 
 
 kmeans = sk.KMeans(n_clusters=2, random_state=0).fit(klean)
@@ -305,7 +312,7 @@ plt.xlabel('Vodka Percentage of Sales - Median')
 plt.ylabel('Whisky Percentage of Sales - Median')
 
 
-# In[103]:
+# In[255]:
 
 
 lean['Group'] = kmeans.labels_
@@ -313,7 +320,7 @@ print('Group 0', getGroupAverage(lean, 0))
 print('Group 1', getGroupAverage(lean, 1))
 
 
-# In[104]:
+# In[256]:
 
 
 kmeans = sk.KMeans(n_clusters=3, random_state=0).fit(kaveraged)
@@ -321,9 +328,10 @@ plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'], color=getColors(kmeans.lab
 plt.title('Vodka and Whisky Percentage of Sales - Median by County, 3 Clusters')
 plt.xlabel('Vodka Percentage of Sales - Median')
 plt.ylabel('Whisky Percentage of Sales - Median')
+fig.savefig('plots/All3Clusters.png')
 
 
-# In[105]:
+# In[257]:
 
 
 averaged['Group'] = kmeans.labels_
@@ -332,7 +340,16 @@ print('Group 1', getGroupAverage(averaged, 1))
 print('Group 2', getGroupAverage(averaged, 2))
 
 
-# In[106]:
+# In[258]:
+
+
+fig = sns.lmplot(y='WHISKEY', x='VODKA',data=kaveraged,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Percentage of Total Sales that are Vodka vs Whiskey')
+fig.savefig('plots/VodkaWhiskey.png')
+
+
+# In[259]:
 
 
 kmeans = sk.KMeans(n_clusters=4, random_state=0).fit(kaveraged)
@@ -348,7 +365,7 @@ ax.add_patch(rect)
 plt.show()
 
 
-# In[107]:
+# In[260]:
 
 
 averaged['Group'] = kmeans.labels_
@@ -356,4 +373,74 @@ print('Group 0', getGroupAverage(averaged, 0))
 print('Group 1', getGroupAverage(averaged, 1))
 print('Group 2', getGroupAverage(averaged, 2))
 print('Group 3', getGroupAverage(averaged, 3))
+
+
+# In[261]:
+
+
+# Do some modeling
+X = liquor['Median_Household_Income']
+Y = liquor['VODKA']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
+# In[262]:
+
+
+fig = sns.lmplot(x='Median_Household_Income', y='VODKA',data=liquor,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Vodka\'s Percentage of Total Sales vs Median Household Income')
+fig.savefig('plots/VodkaIncome.png')
+
+
+# In[263]:
+
+
+X = liquor['Median_Household_Income']
+Y = liquor['WHISKEY']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
+# In[264]:
+
+
+fig = sns.lmplot(x='Median_Household_Income', y='WHISKEY',data=liquor,fit_reg=True)
+ax = plt.gca()
+ax.set_title('Whiskey\'s Percentage of Total Sales vs Median Household Income')
+fig.savefig('plots/WhiskeyIncome.png')
+
+
+# In[265]:
+
+
+X = liquor[['VODKA', 'WHISKEY']]
+Y = liquor['Median_Household_Income']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+
+
+# In[266]:
+
+
+Y = liquor['Median_Household_Income']
+X = liquor['VODKA']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
+# It's identical to putting the X and Y back, wow
+
+
+# In[267]:
+
+
+Y = liquor['WHISKEY']
+X = liquor['VODKA']
+
+model = sm.OLS(Y,X).fit()
+print(model.summary())
 
