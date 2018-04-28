@@ -15,5 +15,5 @@ Alternatively, you could save it manually via: File > Download as > Python (.py)
 # Converting back to a python notebook
 Simply run the included convert-to-notebook.py to convert liquor.py to a .ipynb, modify for any new notebooks.
 
-#Findings
+# Findings
 We have found a positive relationship between median income and vodka sales, a negative relationship between median income and whiskey sales, and an inverse relationship between vodka sales and whiskey sales. 
