@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[25]:
+# In[159]:
 
 
 import pandas as pd
@@ -10,12 +10,13 @@ from datetime import date
 import sklearn.cluster as sk
 import numpy
 import seaborn as sns
+import matplotlib.patches as patches
 
 sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[2]:
+# In[160]:
 
 
 #Read in aggregated data
@@ -28,7 +29,7 @@ liquor.head()
 # ##### After some investigation, it was determined that Scotch had a value of nan for Friedmont County. We replaced this with a 0 representing no Scotch Sales
 
 
-# In[3]:
+# In[161]:
 
 
 liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
@@ -37,7 +38,7 @@ liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
 # ##### We also convert sales of each liquor into percentages instead of whole sales so that the population/total number of sales doesn't bias these values
 
 
-# In[4]:
+# In[162]:
 
 
 liquor['BOURBON'] = liquor['BOURBON']/liquor['nSales']; 
@@ -63,7 +64,7 @@ liquor.head()
 # ##### In my first model, I want to see if we can use income to predict the volume of alcohol purchased. Since population clearly has a large effect on volume of alcohol sold, I used volume per capita. A better way of doing this might be to use population as a variable, but I thought that would give us a better idea of the exact impact of income
 
 
-# In[5]:
+# In[163]:
 
 
 from sklearn import linear_model
@@ -97,7 +98,7 @@ print('Score: %.2f' % reg.score(X_train, y_train))
 # ##### Let's plot the results to verify
 
 
-# In[6]:
+# In[164]:
 
 
 # Plot outputs
@@ -115,7 +116,7 @@ plt.yticks();
 # ##### This time I wanted to see if income affected price. This seems like it would have a higher correlation. It turns out it also isn't that significant as we again have a pretty low score.
 
 
-# In[7]:
+# In[165]:
 
 
 reg = linear_model.LinearRegression(normalize = True)
@@ -150,7 +151,7 @@ plt.xticks();
 plt.yticks();
 
 
-# In[8]:
+# In[166]:
 
 
 liquor.loc['MEAN'] = liquor.apply(numpy.mean)
@@ -163,14 +164,14 @@ liquor.head()
 # ## I think we should categorize all of our variables. I think we don't have enough data points to capture the nuances in large values like median income and number of total sales. This would also allow us to start doing association rules
 
 
-# In[9]:
+# In[167]:
 
 
 categoryPercents = liquor[['BOURBON', 'BRANDIES', 'COCKTAILS', 'GINS', 'LIQUEUR', 'OTHER', 'RUM', 'SCHNAPPS', 'SCOTCH', 'SPIRITS', 'TEQUILA', 'VODKA', 'WHISKEY']]
 categoryPercents.head()
 
 
-# In[10]:
+# In[168]:
 
 
 # Pretty much worthless
@@ -183,7 +184,7 @@ categoryPercents.head()
 #    categoryPercents.loc[county].plot(kind='bar', ax=ax)
 
 
-# In[11]:
+# In[169]:
 
 
 # Pretty much worthless
@@ -196,73 +197,138 @@ categoryPercents.head()
 #    categoryPercents[cat].plot(kind='bar', ax=ax)
 
 
-# In[20]:
+# In[170]:
 
 
+# Make dataframe of deltas from average and one thats filtered
 averaged = pd.DataFrame(index=categoryPercents.index, columns=list(categoryPercents))
 lean = pd.DataFrame(index=categoryPercents.index, columns=list(categoryPercents))
+
 for county in categoryPercents.index:
     overs = 0
     for cat in list(categoryPercents):
+        # Calculate the delta
         newVal = categoryPercents.loc[county, cat] - categoryPercents.loc['MEDIAN', cat]
         averaged.loc[county, cat] = newVal
+        # Convert the percent to a positive integer then divide by 2
         overs += int(100 * abs(newVal) / 2)
+    # Require at least 3 overs to be put on lean
     if overs >= 3:
         lean.loc[county] = averaged.loc[county]
     else:
         lean = lean.drop(county, axis=0)
     
+# Make all floats to prevent errors
 averaged = averaged[averaged.columns].astype(float)
 lean = lean[lean.columns].astype(float)
-lean
 
 
-# In[41]:
+# In[171]:
 
 
+# Plot lean on heat map with a different color for every 0.1  +/- 0.05
 f,ax = plt.subplots(figsize=(15, 15))
-sns.heatmap(lean, annot=True, fmt="d", linewidths=.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
+sns.heatmap(lean, annot=True, linewidths=0.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
 
 
-# In[49]:
+# In[172]:
 
 
-lean.plot(kind='scatter', x='VODKA', y='WHISKEY')
+lean.plot(kind='scatter', x='VODKA', y='WHISKEY', title='Vodka and Whisky Percentage of Sales - Median by County, Filtered')
+plt.xlabel('Vodka Percentage of Sales - Median')
+plt.ylabel('Whisky Percentage of Sales - Median')
 
 
-# In[50]:
+# In[173]:
 
 
+def getGroupAverage(df, group):
+    counties = df.loc[df['Group'] == group].index
+    total = 0
+    for county in counties:
+        total += liquor.loc[county, 'Median_Household_Income']
+    return total / len(counties)
+
+
+# In[174]:
+
+
+# Setup kmeans
 klean = lean[['VODKA', 'WHISKEY']] 
 kaveraged = averaged[['VODKA', 'WHISKEY']] 
 kmeans = sk.KMeans(n_clusters=3, random_state=0).fit(klean)
-plt.scatter(klean['VODKA'], klean['WHISKEY'],c=kmeans.labels_)
+
+# Plot
+fig,ax = plt.subplots(1)
+plt.scatter(klean['VODKA'], klean['WHISKEY'], c=kmeans.labels_)
+plt.title('Vodka and Whisky Percentage of Sales - Median by County, Filtered, 3 Clusters')
+plt.xlabel('Vodka Percentage of Sales - Median')
+plt.ylabel('Whisky Percentage of Sales - Median')
+# Add rectangle
+rect = patches.Rectangle((-0.02,-0.02), 0.04, 0.04, linewidth=1, edgecolor='r', facecolor='none')
+ax.add_patch(rect)
+plt.show()
 
 
-# In[51]:
+# In[175]:
+
+
+lean['Group'] = kmeans.labels_
+print('Group 0', getGroupAverage(lean, 0))
+print('Group 1', getGroupAverage(lean, 1))
+print('Group 2', getGroupAverage(lean, 2))
+
+
+# In[176]:
 
 
 kmeans = sk.KMeans(n_clusters=2, random_state=0).fit(klean)
-plt.scatter(klean['VODKA'], klean['WHISKEY'],c=kmeans.labels_)
+plt.scatter(klean['VODKA'], klean['WHISKEY'], c=kmeans.labels_)
+plt.title('Vodka and Whisky Percentage of Sales - Median by County, Filtered, 2 Clusters')
+plt.xlabel('Vodka Percentage of Sales - Median')
+plt.ylabel('Whisky Percentage of Sales - Median')
 
 
-# In[52]:
+# In[177]:
+
+
+lean['Group'] = kmeans.labels_
+print('Group 0', getGroupAverage(lean, 0))
+print('Group 1', getGroupAverage(lean, 1))
+
+
+# In[178]:
 
 
 kmeans = sk.KMeans(n_clusters=3, random_state=0).fit(kaveraged)
-plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'],c=kmeans.labels_)
+plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'], c=kmeans.labels_)
+plt.title('Vodka and Whisky Percentage of Sales - Median by County, 3 Clusters')
+plt.xlabel('Vodka Percentage of Sales - Median')
+plt.ylabel('Whisky Percentage of Sales - Median')
 
 
-# In[53]:
+# In[179]:
 
 
 kmeans = sk.KMeans(n_clusters=4, random_state=0).fit(kaveraged)
-plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'],c=kmeans.labels_)
+
+fig,ax = plt.subplots(1)
+plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'], c=kmeans.labels_)
+plt.title('Vodka and Whisky Percentage of Sales - Median by County, 4 Clusters')
+plt.xlabel('Vodka Percentage of Sales - Median')
+plt.ylabel('Whisky Percentage of Sales - Median')
+
+rect = patches.Rectangle((-0.02,-0.02), 0.04, 0.04, linewidth=1, edgecolor='r', facecolor='none')
+ax.add_patch(rect)
+plt.show()
 
 
-# In[54]:
+# In[180]:
 
 
 averaged['Group'] = kmeans.labels_
-averaged.loc[averaged['Group'] == 0]
+print('Group 0', getGroupAverage(averaged, 0))
+print('Group 1', getGroupAverage(averaged, 1))
+print('Group 2', getGroupAverage(averaged, 2))
+print('Group 3', getGroupAverage(averaged, 3))
 
