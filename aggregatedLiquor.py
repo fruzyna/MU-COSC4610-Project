@@ -1,12 +1,13 @@
 
 # coding: utf-8
 
-# In[247]:
+# In[25]:
 
 
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import date
+import sklearn.cluster as sk
 import numpy
 import seaborn as sns
 
@@ -14,7 +15,7 @@ sns.set(style="ticks", color_codes=True)
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 
-# In[248]:
+# In[2]:
 
 
 #Read in aggregated data
@@ -27,7 +28,7 @@ liquor.head()
 # ##### After some investigation, it was determined that Scotch had a value of nan for Friedmont County. We replaced this with a 0 representing no Scotch Sales
 
 
-# In[249]:
+# In[3]:
 
 
 liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
@@ -36,7 +37,7 @@ liquor['SCOTCH'][liquor['SCOTCH'].isnull()] = 0
 # ##### We also convert sales of each liquor into percentages instead of whole sales so that the population/total number of sales doesn't bias these values
 
 
-# In[250]:
+# In[4]:
 
 
 liquor['BOURBON'] = liquor['BOURBON']/liquor['nSales']; 
@@ -62,7 +63,7 @@ liquor.head()
 # ##### In my first model, I want to see if we can use income to predict the volume of alcohol purchased. Since population clearly has a large effect on volume of alcohol sold, I used volume per capita. A better way of doing this might be to use population as a variable, but I thought that would give us a better idea of the exact impact of income
 
 
-# In[251]:
+# In[5]:
 
 
 from sklearn import linear_model
@@ -96,7 +97,7 @@ print('Score: %.2f' % reg.score(X_train, y_train))
 # ##### Let's plot the results to verify
 
 
-# In[252]:
+# In[6]:
 
 
 # Plot outputs
@@ -114,7 +115,7 @@ plt.yticks();
 # ##### This time I wanted to see if income affected price. This seems like it would have a higher correlation. It turns out it also isn't that significant as we again have a pretty low score.
 
 
-# In[253]:
+# In[7]:
 
 
 reg = linear_model.LinearRegression(normalize = True)
@@ -149,7 +150,7 @@ plt.xticks();
 plt.yticks();
 
 
-# In[254]:
+# In[8]:
 
 
 liquor.loc['MEAN'] = liquor.apply(numpy.mean)
@@ -162,14 +163,14 @@ liquor.head()
 # ## I think we should categorize all of our variables. I think we don't have enough data points to capture the nuances in large values like median income and number of total sales. This would also allow us to start doing association rules
 
 
-# In[255]:
+# In[9]:
 
 
 categoryPercents = liquor[['BOURBON', 'BRANDIES', 'COCKTAILS', 'GINS', 'LIQUEUR', 'OTHER', 'RUM', 'SCHNAPPS', 'SCOTCH', 'SPIRITS', 'TEQUILA', 'VODKA', 'WHISKEY']]
 categoryPercents.head()
 
 
-# In[256]:
+# In[10]:
 
 
 # Pretty much worthless
@@ -182,7 +183,7 @@ categoryPercents.head()
 #    categoryPercents.loc[county].plot(kind='bar', ax=ax)
 
 
-# In[257]:
+# In[11]:
 
 
 # Pretty much worthless
@@ -195,26 +196,73 @@ categoryPercents.head()
 #    categoryPercents[cat].plot(kind='bar', ax=ax)
 
 
-# In[285]:
+# In[20]:
 
 
 averaged = pd.DataFrame(index=categoryPercents.index, columns=list(categoryPercents))
+lean = pd.DataFrame(index=categoryPercents.index, columns=list(categoryPercents))
 for county in categoryPercents.index:
     overs = 0
     for cat in list(categoryPercents):
         newVal = categoryPercents.loc[county, cat] - categoryPercents.loc['MEDIAN', cat]
         averaged.loc[county, cat] = newVal
         overs += int(100 * abs(newVal) / 2)
-    if overs < 3:
-        averaged = averaged.drop(county, axis=0)
+    if overs >= 3:
+        lean.loc[county] = averaged.loc[county]
+    else:
+        lean = lean.drop(county, axis=0)
     
 averaged = averaged[averaged.columns].astype(float)
-averaged
+lean = lean[lean.columns].astype(float)
+lean
 
 
-# In[286]:
+# In[41]:
 
 
 f,ax = plt.subplots(figsize=(15, 15))
-sns.heatmap(averaged, annot=True, fmt="d", linewidths=.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
+sns.heatmap(lean, annot=True, fmt="d", linewidths=.5, ax=ax, cmap=sns.color_palette("coolwarm", 21), vmin=-0.105, vmax=0.105)
+
+
+# In[49]:
+
+
+lean.plot(kind='scatter', x='VODKA', y='WHISKEY')
+
+
+# In[50]:
+
+
+klean = lean[['VODKA', 'WHISKEY']] 
+kaveraged = averaged[['VODKA', 'WHISKEY']] 
+kmeans = sk.KMeans(n_clusters=3, random_state=0).fit(klean)
+plt.scatter(klean['VODKA'], klean['WHISKEY'],c=kmeans.labels_)
+
+
+# In[51]:
+
+
+kmeans = sk.KMeans(n_clusters=2, random_state=0).fit(klean)
+plt.scatter(klean['VODKA'], klean['WHISKEY'],c=kmeans.labels_)
+
+
+# In[52]:
+
+
+kmeans = sk.KMeans(n_clusters=3, random_state=0).fit(kaveraged)
+plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'],c=kmeans.labels_)
+
+
+# In[53]:
+
+
+kmeans = sk.KMeans(n_clusters=4, random_state=0).fit(kaveraged)
+plt.scatter(kaveraged['VODKA'], kaveraged['WHISKEY'],c=kmeans.labels_)
+
+
+# In[54]:
+
+
+averaged['Group'] = kmeans.labels_
+averaged.loc[averaged['Group'] == 0]
 
