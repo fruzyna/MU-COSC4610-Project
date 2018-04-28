@@ -444,3 +444,41 @@ X = liquor['VODKA']
 model = sm.OLS(Y,X).fit()
 print(model.summary())
 
+
+# In[33]:
+
+
+d2=liquor.as_matrix(['nSales','Sales Per Capita'])
+
+d2[:,0]=d2[:,0]/numpy.max(d2[:,0])
+d2[:,1]=d2[:,1]/numpy.max(d2[:,1])
+
+
+kmeans=sk.KMeans(n_clusters=5).fit(d2)
+plt.scatter(d2[:,0],d2[:,1],c=kmeans.labels_.astype(float))
+
+
+# In[32]:
+
+
+d2=liquor.as_matrix(['Median_Household_Income','Sales Per Capita'])
+
+d2[:,0]=d2[:,0]/numpy.max(d2[:,0])
+d2[:,1]=d2[:,1]/numpy.max(d2[:,1])
+
+
+kmeans=sk.KMeans(n_clusters=5).fit(d2)
+plt.scatter(d2[:,0],d2[:,1],c=kmeans.labels_.astype(float))
+
+
+# In[38]:
+
+
+d2=liquor.as_matrix(['Median_Household_Income','Price per Liter'])
+
+d2[:,0]=d2[:,0]/numpy.max(d2[:,0])
+d2[:,1]=d2[:,1]/numpy.max(d2[:,1])
+
+
+kmeans=sk.KMeans(n_clusters=7).fit(d2)
+plt.scatter(d2[:,0],d2[:,1],c=kmeans.labels_.astype(float))
